@@ -244,6 +244,15 @@ void DefaultSceneLayer::_CreateScene()
 		// Our toon shader material
 
 		Texture2D::Sptr planeTex = ResourceManager::CreateAsset<Texture2D>("textures/box-diffuse.png");
+		Texture2D::Sptr planeTexFR = ResourceManager::CreateAsset<Texture2D>("textures/box.png");
+
+		Material::Sptr boxMaterialFR = ResourceManager::CreateAsset<Material>(deferredForward); {
+			boxMaterialFR->Name = "Plane";
+			boxMaterialFR->Set("u_Material.AlbedoMap", planeTexFR);
+			boxMaterialFR->Set("u_Material.Shininess", 1.0f);
+			boxMaterialFR->Set("u_Material.NormalMap", normalMapDefault);
+		}
+
 
 
 		Material::Sptr boxMaterial = ResourceManager::CreateAsset<Material>(deferredForward); {
@@ -330,7 +339,7 @@ void DefaultSceneLayer::_CreateScene()
 			// Create and attach a RenderComponent to the object to draw our mesh
 			RenderComponent::Sptr renderer = plane->Add<RenderComponent>();
 			renderer->SetMesh(tiledMesh);
-			renderer->SetMaterial(boxMaterial);
+			renderer->SetMaterial(boxMaterialFR);
 			GroundBehaviour::Sptr ground = plane->Add<GroundBehaviour>();
 			// Attach a plane collider that extends infinitely along the X/Y axis
 			RigidBody::Sptr physics = plane->Add<RigidBody>(/*static by default*/);

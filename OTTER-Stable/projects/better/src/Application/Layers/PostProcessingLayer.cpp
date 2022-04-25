@@ -86,7 +86,7 @@ void PostProcessingLayer::OnAppLoad(const nlohmann::json& config)
 
 void PostProcessingLayer::SetLUT(bool state)
 {
-	_effects[0]->ChangeLut(cool_lut);
+	_effects[0]->ChangeLut(other_lut);
 	_effects[0]->Enabled = state;
 }
 
