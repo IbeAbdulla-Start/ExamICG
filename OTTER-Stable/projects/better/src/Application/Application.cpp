@@ -47,20 +47,15 @@
 #include "Gameplay/Components/ShadowCamera.h"
 //ours
 #include "Gameplay/Components/DeleteObjectBehaviour.h"
-#include "Gameplay/Components/CollectTrashBehaviour.h"
-#include "Gameplay/Components/SubmittingTrashBehaviour.h"
 #include "Gameplay/Components/PlayerMovementBehavior.h"
 #include "Gameplay/Components/ConveyorBeltBehaviour.h"
-#include "Gameplay/Components/SpillBehaviour.h"
-#include "Gameplay/Components/SteeringBehaviour.h"
-#include "Gameplay/Components/FollowBehaviour.h"
+#include "Gameplay/Components/EnemyMoving.h"
 #include "Gameplay/Components/MorphAnimator.h"
 #include "Gameplay/Components/MorphMeshRenderer.h"
 #include "Gameplay/Components/GroundBehaviour.h"
 #include "Gameplay/Components/ConveyorBeltBehaviour.h"
 #include "Gameplay/Components/AudioEngine.h"
 #include "Gameplay/Components/common.h"
-#include "Gameplay/Components/InventoryUI.h"
 
 // GUI
 #include "Gameplay/Components/GUI/RectTransform.h"
@@ -72,17 +67,15 @@
 #include "Layers/RenderLayer.h"
 #include "Layers/InterfaceLayer.h"
 #include "Layers/DefaultSceneLayer.h"
-#include "Layers/TutorialSceneLayer.h"
 #include "Layers/LogicUpdateLayer.h"
 #include "Layers/ImGuiDebugLayer.h"
 #include "Layers/InstancedRenderingTestLayer.h"
 #include "Layers/ParticleLayer.h"
 #include "Layers/PostProcessingLayer.h"
-#include "Layers/MenuSceneLayer.h"
 
 
 Application* Application::_singleton = nullptr;
-std::string Application::_applicationName = "Rubbish Rush";
+std::string Application::_applicationName = "Exam";
 
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 720
@@ -92,7 +85,7 @@ Application::Application() :
 	_windowSize({DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT}),
 	_isRunning(false),
 	_isEditor(true),
-	_windowTitle("Rubbish Rush"),
+	_windowTitle("Exam"),
 	_currentScene(nullptr),
 	_targetScene(nullptr)
 	//_renderOutput(nullptr)
@@ -174,41 +167,6 @@ void Application::_Run()
 	AudioEngine::loadBankS();
 	AudioEngine::loadEventS();
 
-	//AUDIO EXAMPLE STUDIO
-	/*AudioEngine audioEngineS;
-	audioEngineS.studioinit();
-	FMOD::Studio::Bank* MasterBank;
-	FMOD::Studio::Bank* StringBank;
-	FMOD::Studio::Bank* Sounds;
-	audioEngineS.loadBank(Common_MediaPath("Master.bank"), &MasterBank);
-    audioEngineS.loadBank(Common_MediaPath("Master.strings.bank"), &StringBank);
-	audioEngineS.loadBank(Common_MediaPath("Sounds.bank"), &Sounds);
-	FMOD::Studio::EventDescription* Footsteps = NULL;
-	FMOD::Studio::EventInstance* FootstepsInst = NULL;
-	audioEngineS.getEventS("event:/More_footsteps", Footsteps, &FootstepsInst);*/
-    //.pStudioSystem->getEventByID("5839c9de - 7ae5 - 42c2 - a7ef - 374a1b37060a");
-
-
-	//ToneFire Studio Audio Example
-	/*ToneFire::FMODStudio studio;
-
-	studio.LoadBank("Master.bank");
-	studio.LoadBank("Master.strings.bank");
-	studio.LoadBank("Sound.bank");
-	studio.LoadBank("Music.bank");
-	studio.LoadBank("SFX.bank");
-	ToneFire::StudioSound test;
-	test.LoadEvent("event:/Footsteps");
-	test.LoadEvent("event:/Music");
-	test.SetEventPosition("event:/Music", FMOD_VECTOR{ 0.0f,0.0f,15.0f });
-	test.PlayEvent("event:/Music");*/
-	
-
-	//AUDIO EXAMPLE CORE
-	/*AudioEngine audioEngine;
-	audioEngine.init();
-	audioEngine.loadSound("test", "Bag_of_trash.wav", true);*/
-	// TODO: Register layers
 	_layers.push_back(std::make_shared<GLAppLayer>());
 	//_layers.push_back(std::make_shared<DefaultSceneLayer>());
 	//_layers.push_back(std::make_shared<TutorialSceneLayer>());
@@ -220,7 +178,7 @@ void Application::_Run()
 	
 
 	//for playtesting
-	_isEditor = false;
+	//_isEditor = false;
 
 	// If we're in editor mode, we add all the editor layers
 	if (_isEditor) {
@@ -228,7 +186,7 @@ void Application::_Run()
 	}
 	//_layers.push_back(std::make_shared<DefaultSceneLayer>());
 	//_layers.push_back(std::make_shared<TutorialSceneLayer>());
-	_layers.push_back(std::make_shared<MenuSceneLayer>());
+	_layers.push_back(std::make_shared<DefaultSceneLayer>());
 
 	// Either load the settings, or use the defaults
 	_ConfigureSettings();
@@ -326,11 +284,7 @@ void Application::_Run()
 				//go to tutorial
 				if (change_tutorial)
 				{
-					// remove current layer
-					_layers.pop_back(); //MUST BE THE LAST ONE ADDED
-						//add new layer
-					_layers.push_back(std::make_shared<TutorialSceneLayer>());
-					_ConfigureSettings();
+					
 
 
 					//load in the new scene, at the back of the stack
@@ -348,7 +302,6 @@ void Application::_Run()
 					//remove current layer
 					_layers.pop_back(); //MUST BE THE LAST ONE ADDED
 					//add new layer
-					_layers.push_back(std::make_shared<DefaultSceneLayer>());
 					_ConfigureSettings();
 
 					
@@ -416,20 +369,11 @@ void Application::_RegisterClasses()
 	Gameplay::ComponentManager::RegisterType<ParticleSystem>();
 	Gameplay::ComponentManager::RegisterType<Light>();
 	Gameplay::ComponentManager::RegisterType<ShadowCamera>();
-
+	Gameplay::ComponentManager::RegisterType<EnemyMoving>();
 	Gameplay::ComponentManager::RegisterType<DeleteObjectBehaviour>();
-	Gameplay::ComponentManager::RegisterType<CollectTrashBehaviour>();
-	Gameplay::ComponentManager::RegisterType<SubmittingTrashBehaviour>();
 	Gameplay::ComponentManager::RegisterType<PlayerMovementBehavior>();
 	Gameplay::ComponentManager::RegisterType<ConveyorBeltBehaviour>();
-	Gameplay::ComponentManager::RegisterType<SpillBehaviour>();
-	Gameplay::ComponentManager::RegisterType<SteeringBehaviour>();
-	Gameplay::ComponentManager::RegisterType<FollowBehaviour>();
-	Gameplay::ComponentManager::RegisterType<MorphAnimator>();
-	Gameplay::ComponentManager::RegisterType<MorphMeshRenderer>();
 	Gameplay::ComponentManager::RegisterType<GroundBehaviour>();
-	Gameplay::ComponentManager::RegisterType<ConveyorBeltBehaviour>();
-	Gameplay::ComponentManager::RegisterType<InventoryUI>();
 }
 
 

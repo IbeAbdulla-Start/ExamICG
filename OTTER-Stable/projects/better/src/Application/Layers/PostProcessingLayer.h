@@ -106,7 +106,7 @@ public:
 	// Inherited from ApplicationLayer
 
 	virtual void OnAppLoad(const nlohmann::json& config) override;
-	void SetSlime(bool state);
+	void SetLUT(bool state);
 	virtual void OnUpdate() override;
 	virtual void OnPostRender() override;
 	virtual void OnSceneLoad() override;

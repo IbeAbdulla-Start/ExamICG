@@ -11,7 +11,6 @@
 #include "PostProcessing/BloomEffect.h"
 #include "PostProcessing/MotionblurEffect.h"
 #include "PostProcessing/FilmGrain.h"
-#include "PostProcessing/SlimeVignette.h"
 #include "PostProcessing/Pixelate.h"
 #include "PostProcessing/RimLightEffect.h"
 #include "PostProcessing/NightVision.h"
@@ -47,12 +46,10 @@ void PostProcessingLayer::OnAppLoad(const nlohmann::json& config)
 	//_effects.push_back(std::make_shared<BloomEffect>());
 	//_effects.push_back(std::make_shared<FilmGrain>());
 	
-	_effects.push_back(std::make_shared<SlimeVignette>());
 	//_effects.push_back(std::make_shared<NightVision>());
 	//pl
 	//_effects.push_back(std::make_shared<DepthOfField>());
 	_effects.push_back(std::make_shared<Pixelate>());
-	_effects[2]->Enabled = false;
 
 	Application& app = Application::Get();
 	const glm::uvec4& viewport = app.GetPrimaryViewport();
@@ -87,10 +84,10 @@ void PostProcessingLayer::OnAppLoad(const nlohmann::json& config)
 	other_lut = ResourceManager::CreateAsset<Texture3D>("luts/RRDarkenedLUT.CUBE");
 }
 
-void PostProcessingLayer::SetSlime(bool state)
+void PostProcessingLayer::SetLUT(bool state)
 {
-	//slime effect
-	_effects[2]->Enabled = state;
+	_effects[0]->ChangeLut(cool_lut);
+	_effects[0]->Enabled = state;
 }
 
 void PostProcessingLayer::OnPostRender()
@@ -214,7 +211,7 @@ void PostProcessingLayer::OnUpdate()
 	//
 	//_effects[4]->Enabled = enable_slime;
 
-	_effects[3]->Enabled = pixel;
+	_effects[2]->Enabled = pixel;
 	
 	if (lut1)
 	{

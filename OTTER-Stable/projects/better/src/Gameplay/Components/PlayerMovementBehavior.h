@@ -5,6 +5,7 @@
 #include "Gameplay/GameObject.h"
 #include "Gameplay/Scene.h"
 
+
 /// <summary>
 /// Component That Controls the First Player
 /// </summary>
@@ -25,14 +26,14 @@ public:
 	virtual nlohmann::json ToJson() const override;
 	static PlayerMovementBehavior::Sptr FromJson(const nlohmann::json& blob);
 
-	void SetSpill(bool state);
+	void Hurt(bool state);
 	bool is_moving = false;
 	bool is_running = false;
 
 protected:
 
 	float _impulse;
-	bool in_spill = false;
+	bool hurting = false;
 
 	Gameplay::Physics::RigidBody::Sptr _body;
 

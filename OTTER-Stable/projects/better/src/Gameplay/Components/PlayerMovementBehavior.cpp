@@ -8,29 +8,7 @@
 #include "Gameplay/InputEngine.h"
 #include "AudioEngine.h"
 
-//create movetowards function
-//glm::quat MoveTowards(glm::quat current, glm::quat target, float maxDistanceDelta)
-//{
-//	glm::quat a = glm::quat(glm::vec3(target.x - current.x, target.y - current.y, target.z - current.z));
-//	//a.x = target.x - current.x;
-//	//a.y = target.y - current.y;
-//	//a.z = target.z - current.z;
-//	glm::vec3 magnitude2 = glm::vec3(a.x, a.y, a.z);
-//	float magnitude = magnitude2.length();
-//	if (magnitude <= maxDistanceDelta || magnitude == 0.0f)
-//	{
-//		return target;
-//	}
-//	return current + a / magnitude * maxDistanceDelta;
-//}
-//float MoveTowards2(float current, float target, float maxDelta)
-//{
-//	if (glm::abs(target - current) <= maxDelta)
-//	{
-//		return target;
-//	}
-//	return current + glm::sign(target - current) * maxDelta;
-//}
+
 
 void PlayerMovementBehavior::Awake()
 {
@@ -49,7 +27,7 @@ void PlayerMovementBehavior::RenderImGui() {
 
 nlohmann::json PlayerMovementBehavior::ToJson() const {
 	return {
-		{ "impulse", _impulse }, {"spill_state", in_spill}, {"moving", is_moving}
+		{ "impulse", _impulse }, {"hurt_state",hurting}, {"moving", is_moving}
 	};
 }
 
@@ -63,14 +41,14 @@ PlayerMovementBehavior::~PlayerMovementBehavior() = default;
 PlayerMovementBehavior::Sptr PlayerMovementBehavior::FromJson(const nlohmann::json & blob) {
 	PlayerMovementBehavior::Sptr result = std::make_shared<PlayerMovementBehavior>();
 	result->_impulse = blob["impulse"];
-	result->in_spill = blob["spill_state"];
+	result->hurting = blob["hurt_state"];
 	result->is_moving = blob["moving"];
 	return result;
 }
 
-void PlayerMovementBehavior::SetSpill(bool state)
+void PlayerMovementBehavior::Hurt(bool state)
 {
-	in_spill = state;
+	hurting = state;
 }
 
 void PlayerMovementBehavior::Update(float deltaTime) {
@@ -78,42 +56,23 @@ void PlayerMovementBehavior::Update(float deltaTime) {
 	Application& app = Application::Get();
 	//not moving
 	//input = false;
-	if (in_spill)
+	
+	if (hurting)
 	{
-		_impulse = 0.200f; // _impulse / 1.65f;
-		app.GetLayer<PostProcessingLayer>()->SetSlime(true);
-		
+		app.GetLayer<PostProcessingLayer>()->SetLUT(true);
+
 	}
 	else
 	{
 		//_impulse = 0.0f;
-		app.GetLayer<PostProcessingLayer>()->SetSlime(false);
-		AudioEngine::playEventS("event:/Sounds/SoundEffects/Slime");
-		AudioEngine::EventPosChangeS("event:/Sounds/SoundEffects/Slime", _body->GetGameObject()->GetPosition().x, _body->GetGameObject()->GetPosition().y, _body->GetGameObject()->GetPosition().z);
-		if (_body->GetLinearVelocity().y <= 0.0f && _body->GetLinearVelocity().x <=0.0f) {
-			AudioEngine::stopEventS("event:/Sounds/SoundEffects/Slime");
-		}
+		app.GetLayer<PostProcessingLayer>()->SetLUT(false);
 	}
 
-	////running
-	//if (glfwGetKey(app.GetWindow(), GLFW_KEY_LEFT_SHIFT))
-	//{
-	//	_impulse *= 2.0f;
-	//	is_running = true;
-	//}
-	//else
-	//{
-	//	is_running = false;
-	//}
-
-	//IF SPACE PRESSED = MOVE
 	is_moving = false;
 	if (glfwGetKey(app.GetWindow(), GLFW_KEY_W) || glfwGetKey(app.GetWindow(), GLFW_KEY_UP)) {
 		if (_body->GetLinearVelocity().y >= -5.0f) {
 			
 			_body->ApplyImpulse(glm::vec3(0.0f, -_impulse, 0.0f));
-			//GetGameObject()->SetRotation(glm::vec3(90.0f, 0.0f, 0.0f));
-			//body->GetGameObject()->SetPostion(_body->GetGameObject()->GetPosition() + glm::vec3(0.0f, -_impulse, 0.0f));
 			is_moving = true;
 			_impulse += acceleration;
 			if (_impulse > max_speed)
@@ -128,9 +87,6 @@ void PlayerMovementBehavior::Update(float deltaTime) {
 			_body->ApplyImpulse(glm::vec3(0.0f, _impulse, 0.0f));
 			
 		
-			
-			//GetGameObject()->SetRotation(glm::vec3(90.0f, 0.0f, 180.0f));
-			//_body->GetGameObject()->SetPostion(_body->GetGameObject()->GetPosition() + glm::vec3(0.0f, _impulse, 0.0f));
 			is_moving = true;
 			_impulse += acceleration;
 			if (_impulse > max_speed)
@@ -163,8 +119,6 @@ void PlayerMovementBehavior::Update(float deltaTime) {
 			
 
 			
-			//GetGameObject()->SetRotation(glm::vec3(90.0f, 0.0f, -90.0f));
-			//_body->GetGameObject()->SetPostion(_body->GetGameObject()->GetPosition() + glm::vec3(-_impulse, 0.0f, 0.0f));
 			is_moving = true;
 			_impulse += acceleration;
 			if (_impulse > max_speed)
@@ -226,15 +180,6 @@ void PlayerMovementBehavior::Update(float deltaTime) {
 		GetGameObject()->SetRotation(currentRotation);
 	}
 
-	//particle stuff
-	if (is_moving)
-	{
-		GetGameObject()->GetChildren()[0]->Get<ParticleSystem>()->IsEnabled = true;
-	}
-	else
-	{
-		//GetGameObject()->GetChildren()[0]->Get<ParticleSystem>()->
-		GetGameObject()->GetChildren()[0]->Get<ParticleSystem>()->IsEnabled = false;
-	}
+	
 }
 
